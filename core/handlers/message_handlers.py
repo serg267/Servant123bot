@@ -41,11 +41,12 @@ async def clear(bot: Bot, state: FSMContext) -> None:
 
 async def message_handler(message: Message, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:
     """This handler will resend a text message to admin chat"""
+    await clear(bot, state)   # clear state and edit previous bot message
+
     print(message.model_dump_json())
+    # need special method to serialise Aiogram message .model_dump_json(), json.dumps do incorrect result
     json_obj = json.loads(message.model_dump_json())
 
-    await clear(bot, state)   # clear state and edit previous bot message
-    msg_type = 'unknown'
     if message.text:
         msg_type = 'text'
     elif message.photo:
@@ -73,7 +74,7 @@ async def message_handler(message: Message, bot: Bot, session_maker: sessionmake
     await state.update_data(answer_msg_id=msg.message_id,
                             answer_msg_chat_id=msg.chat.id,
                             message_json=json_obj,
-                            message_id=message.message_id,
+                            # message_id=message.message_id,
                             message_type=msg_type)
     # json_str = msg.model_dump_json()
     # print(json_str)
@@ -82,9 +83,10 @@ async def message_handler(message: Message, bot: Bot, session_maker: sessionmake
 # create router instance
 post_router = Router()
 # common filters
-post_router.message.filter(F.chat.type == 'private',
-                           and_f(~F.forward_from, ~F.forward_from_chat),
-                           ~F.media_group_id)
+# post_router.message.filter(F.chat.type == 'private',
+#                            and_f(~F.forward_from, ~F.forward_from_chat),
+#                            ~F.media_group_id)
+post_router.message.filter(F.chat.type == 'private', ~F.forward_from_chat, ~F.media_group_id)
 # register filtered message handlers
 post_router.message.register(message_handler, F.text | F.photo | F.video | F.audio | F.voice | F.document | F.animation)
 

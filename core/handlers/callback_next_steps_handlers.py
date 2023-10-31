@@ -79,11 +79,52 @@ async def call_hours_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -
     await state.set_state(PostStates.HOURS_MINUTES)
 
 
+# async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext,
+#                                async_scheduler: AsyncIOScheduler) -> None:
+#     """This is post hours:minutes handler"""
+#     data = await state.get_data()
+#     the_date = datetime.combine(data['post_date'], datetime.strptime(call.data, '%H:%M').time())  # combine date
+#     await state.update_data(post_date=the_date)
+#
+#     # form db message object
+#     db_message = Messages(message_json=data['message_json'],
+#                           message_type=data['message_type'],
+#                           post_type=data['post_type'],
+#                           post_date=the_date
+#                           )
+#
+#     match data['post_type']:
+#         case 'пост':
+#             # save to db
+#             db_message = await add_message(db_message, session_maker)
+#             print(db_message)
+#             # add job
+#             job_id = await add_one_job(func=post, dtime=db_message.post_date,
+#                                        kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
+#             # set job id to db
+#             await set_post_job_id(db_message.id, job_id, session_maker)
+#
+#             the_date = db_message.post_date
+#             text = f"Размещение поста\n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}"
+#
+#             await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+#                                         message_id=data['answer_msg_id'],
+#                                         text=text
+#                                         )
+#         case 'реклама':
+#             await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+#                                         message_id=data['answer_msg_id'],
+#                                         text='Автоудаление через?',
+#                                         reply_markup=delete_keyboard()
+#                                         )
+#             await state.update_data(db_message=db_message)
+#             await state.set_state(PostStates.DELETE)
+
 async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext,
                                async_scheduler: AsyncIOScheduler) -> None:
     """This is post hours:minutes handler"""
     data = await state.get_data()
-    the_date = datetime.combine(data['post_date'], datetime.strptime(call.data, '%H:%M').time())  # combine date
+    the_date = datetime.now() + timedelta(minutes=1) # test date
     await state.update_data(post_date=the_date)
 
     # form db message object

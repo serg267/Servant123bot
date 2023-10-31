@@ -1,6 +1,8 @@
 import json
 
 from aiogram import Bot, Dispatcher
+from aiogram.dispatcher.event.bases import CancelHandler
+
 from config import TELEGRAM_TOKEN, ADMINCHAT
 import asyncio
 import logging
