@@ -1,4 +1,8 @@
+import asyncio
+import datetime
+
 from aiogram import Bot
+from aiogram.types import InputMediaPhoto, InputMediaVideo, InputMediaDocument, InputMediaAudio, InputMediaAnimation
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,6 +95,70 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                             message_id=db_message.message_json['message_id'],
                                             )
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
+
+        case 'media_group':
+            json_album = db_message.message_json
+            print(json_album)
+
+            medias = []
+            count = 0
+
+            for message in json_album:
+                count += 1
+                print('**', count, '**')
+                print(message)
+                print(message['photo'][-1]['file_id'])
+
+                # add input media all types
+                if message['photo']:
+                    photo = InputMediaPhoto(media=message['photo'][-1]['file_id'],
+                                            caption=message['caption'],
+                                            caption_entities=message['caption_entities']
+                                            )
+                    medias.append(photo)
+
+                elif message['video']:
+                    video = InputMediaVideo(media=message['video']['file_id'],
+                                            caption=message['caption'],
+                                            caption_entities=message['caption_entities'],
+                                            thumbnail=message['video']['thumbnail']['file_id']
+                                            )
+                    medias.append(video)
+
+                elif message['document']:
+                    document = InputMediaDocument(media=message['document']['file_id'],
+                                                  caption=message['caption'],
+                                                  caption_entities=message['caption_entities'],
+                                                  thumbnail=message['document']['thumbnail']['file_id']
+                                                  )
+                    medias.append(document)
+
+                elif message['audio']:
+                    audio = InputMediaAudio(media=message['audio']['file_id'],
+                                            caption=message['caption'],
+                                            caption_entities=message['caption_entities'],
+                                            thumbnail=message['audio']['thumbnail']['file_id']
+                                            )
+                    medias.append(audio)
+
+                elif message.animation:
+                    animation = InputMediaAnimation(media=message['audio']['file_id'],
+                                                    caption=message['caption'],
+                                                    caption_entities=message['caption_entities'],
+                                                    thumbnail=message['audio']['thumbnail']['file_id']
+                                                    )
+                    medias.append(animation)
+            msgs = await bot.send_media_group(**commons, media=medias)
+
+            msgs_id = [msg.message_id for msg in msgs]
+            print('msgs_id=', msgs_id)
+            await set_telegram_msg_id(db_message.id, msgs_id, session_maker)
+            # for msg in msgs:
+            #     print(msg.model_dump_json())
+            #     t = datetime.datetime.now()
+            #     await asyncio.sleep(60)
+            #     await bot.delete_message(**commons, message_id=msg.message_id)
+            #     print('time=', datetime.datetime.now() - t)
 
 
 def delayed_post(msg: Messages, bot: Bot, async_scheduler: AsyncIOScheduler):

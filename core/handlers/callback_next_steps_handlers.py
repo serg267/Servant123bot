@@ -17,6 +17,8 @@ from core.db import Messages, add_message, set_post_job_id, set_p_d_jobs_id
 from core.jobs.schedule import add_one_job
 from core.keyboards import date_keyboard, hours_keyboard, hours_minutes_keyboard, delete_keyboard, string_days
 from core.logics import post, delete
+from core.logics.post_delete import post_then_delete
+from core.logics.post_text import post_information
 
 from core.models.States import PostStates
 
@@ -172,19 +174,20 @@ async def call_delete_handler(call: CallbackQuery, bot: Bot, session_maker: sess
 
     # save to db
     db_message = await add_message(db_message, session_maker)
-    # add jobs
-    post_job_id = await add_one_job(func=post, dtime=db_message.post_date,
+
+    # add job
+    post_job_id = await add_one_job(func=post_then_delete, dtime=db_message.post_date,
                                     kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
-    delete_job_id = await add_one_job(func=delete, dtime=db_message.post_date,
-                                      kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
-    # set jobs id to db
-    await set_p_d_jobs_id(db_message.id, post_job_id, delete_job_id, session_maker)
+
+    # set post job id to db
+    await set_post_job_id(db_message.id, post_job_id, session_maker)
 
     # bot send edited message
     the_date = data['post_date']
-    text = f"Размещение рекламы \n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}" \
-           f"\nавтоудаление через {string_days(call.data)}"
-    await bot.edit_message_text(chat_id=data['answer_msg_chat_id'], message_id=data['answer_msg_id'], text=text)
+    text = post_information(db_message)
+    # text = f"Размещение рекламы \n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}" \
+    #        f"\nавтоудаление через {string_days(call.data)}"
+    await bot.edit_message_text(chat_id=data['answer_msg_chat_id'], message_id=data['answer_msg_id'], text=text, parse_mode='HTML')
 
     # state clear
     await state.clear()

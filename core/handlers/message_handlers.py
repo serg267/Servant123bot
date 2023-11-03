@@ -42,10 +42,13 @@ async def clear(bot: Bot, state: FSMContext) -> None:
 async def message_handler(message: Message, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:
     """This handler will resend a text message to admin chat"""
     await clear(bot, state)   # clear state and edit previous bot message
+    print(message.model_dump())
 
     print(message.model_dump_json())
     # need special method to serialise Aiogram message .model_dump_json(), json.dumps do incorrect result
     json_obj = json.loads(message.model_dump_json())
+    print('88')
+    print(json_obj)
 
     if message.text:
         msg_type = 'text'
