@@ -1,59 +1,112 @@
-import asyncio
 import json
-import locale
+
 from datetime import date, datetime, timedelta
+from typing import Dict, Callable
 
 from aiogram import Bot, Router, F
-from aiogram.filters import and_f
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import Message, CallbackQuery
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from config import ADMINCHAT
-from core.db import Messages, add_message, set_post_job_id, set_p_d_jobs_id
+from core.commands import command_help
+from core.db import Messages, add_message, set_post_job_id
 from core.jobs.schedule import add_one_job
-from core.keyboards import date_keyboard, hours_keyboard, hours_minutes_keyboard, delete_keyboard, string_days
-from core.logics import post, delete
+from core.keyboards import date_keyboard, hours_keyboard, hours_minutes_keyboard, delete_keyboard, yes_no_keyboard, \
+    cancel_keyboard, some_buttons_keyboard
+from core.logics import post
 from core.logics.post_delete import post_then_delete
 from core.logics.post_text import post_information
 
 from core.models.States import PostStates
 
 
-async def cancel_callback_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
-    """This handler drops state and it's data"""
-    data = await state.get_data()
-    await state.clear()
+async def notice_and_save_jobs(func: Callable, db_message: Messages, bot: Bot, data: Dict,
+                               session_maker: sessionmaker) -> None:
+    # add job
+    job_id = await add_one_job(func=func, dtime=db_message.post_date,
+                               kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
+    # set job id to db
+    await set_post_job_id(db_message.id, job_id, session_maker)
+
+    # bot send edited message
     await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
                                 message_id=data['answer_msg_id'],
-                                text='отмена'
-                                )
-    # await asyncio.sleep(30)
-    # await bot.delete_message(chat_id=data['answer_msg_chat_id'], message_id=data['answer_msg_id'])
+                                text=post_information(db_message),
+                                parse_mode='HTML')
 
 
-async def call_post_or_advertisement_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
-    """This is post or advertisement handler"""
-    json_str = json.dumps(call.__dict__, default=str)
-    print(json_str)
+async def cancel_callback_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
+    """This handler drops state and it's data"""
+    await command_help(call, bot,  state)
+
+
+async def call_post_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
+    """This is call post handler"""
+    print(call.model_dump_json())
+
     data = await state.get_data()
-    print(data['answer_msg_id'], call.data, type(call.data))
+
     await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
                                 message_id=data['answer_msg_id'],
                                 text='Дата размещения?',
                                 reply_markup=date_keyboard()
                                 )
+
     await state.set_state(PostStates.DATE)
     await state.update_data(post_type=call.data)
 
 
+async def call_adv_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
+    """This call advertisement handler"""
+    print(call.model_dump_json())
+
+    data = await state.get_data()
+    if data['message_type'] not in ['media_group', 'forwarded']:
+        await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+                                    message_id=data['answer_msg_id'],
+                                    text='Добавить кнопку?',
+                                    reply_markup=yes_no_keyboard()
+                                    )
+        await state.set_state(PostStates.ADD_BUTTON)
+    else:
+        await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+                                    message_id=data['answer_msg_id'],
+                                    text='Дата размещения?',
+                                    reply_markup=date_keyboard()
+                                    )
+
+        await state.set_state(PostStates.DATE)
+    await state.update_data(post_type=call.data)
+
+
+async def button_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
+    """This is  call yes no button handler"""
+    print(call.model_dump_json())
+
+    data = await state.get_data()
+    if call.data == 'да':
+        await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+                                    message_id=data['answer_msg_id'],
+                                    text='Выбери кнопку или введи свое название',
+                                    reply_markup=some_buttons_keyboard()
+                                    )
+        await state.set_state(PostStates.BUTTON_TEXT)
+    else:
+        await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
+                                    message_id=data['answer_msg_id'],
+                                    text='Дата размещения?',
+                                    reply_markup=date_keyboard()
+                                    )
+
+        await state.set_state(PostStates.DATE)
+
+
 async def call_date_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
     """This is post date handler"""
-    json_str = json.dumps(call.__dict__, default=str)
-    print(json_str)
+    print(call.model_dump_json())
+
     data = await state.get_data()
     is_today = (datetime.strptime(call.data, '%d.%m.%Y').date() == datetime.today().date())
 
@@ -69,8 +122,8 @@ async def call_date_handler(call: CallbackQuery, bot: Bot, state: FSMContext) ->
 
 async def call_hours_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:
     """This is post hours handler"""
-    json_str = json.dumps(call.__dict__, default=str)
-    print(json_str)
+    print(call.model_dump_json())
+
     data = await state.get_data()
     print(data['answer_msg_id'], call.data, type(call.data))
     await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
@@ -81,52 +134,11 @@ async def call_hours_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -
     await state.set_state(PostStates.HOURS_MINUTES)
 
 
-# async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext,
-#                                async_scheduler: AsyncIOScheduler) -> None:
-#     """This is post hours:minutes handler"""
-#     data = await state.get_data()
-#     the_date = datetime.combine(data['post_date'], datetime.strptime(call.data, '%H:%M').time())  # combine date
-#     await state.update_data(post_date=the_date)
-#
-#     # form db message object
-#     db_message = Messages(message_json=data['message_json'],
-#                           message_type=data['message_type'],
-#                           post_type=data['post_type'],
-#                           post_date=the_date
-#                           )
-#
-#     match data['post_type']:
-#         case 'пост':
-#             # save to db
-#             db_message = await add_message(db_message, session_maker)
-#             print(db_message)
-#             # add job
-#             job_id = await add_one_job(func=post, dtime=db_message.post_date,
-#                                        kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
-#             # set job id to db
-#             await set_post_job_id(db_message.id, job_id, session_maker)
-#
-#             the_date = db_message.post_date
-#             text = f"Размещение поста\n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}"
-#
-#             await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
-#                                         message_id=data['answer_msg_id'],
-#                                         text=text
-#                                         )
-#         case 'реклама':
-#             await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
-#                                         message_id=data['answer_msg_id'],
-#                                         text='Автоудаление через?',
-#                                         reply_markup=delete_keyboard()
-#                                         )
-#             await state.update_data(db_message=db_message)
-#             await state.set_state(PostStates.DELETE)
-
-async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext,
-                               async_scheduler: AsyncIOScheduler) -> None:
+async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:
     """This is post hours:minutes handler"""
     data = await state.get_data()
-    the_date = datetime.now() + timedelta(minutes=1) # test date
+    #  the_date = datetime.combine(data['post_date'], datetime.strptime(call.data, '%H:%M').time())  # combine date
+    the_date = datetime.now() + timedelta(minutes=2)  # test date
     await state.update_data(post_date=the_date)
 
     # form db message object
@@ -135,25 +147,22 @@ async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: ses
                           post_type=data['post_type'],
                           post_date=the_date
                           )
+    if data.get('button_text') and data.get('button_link'):
+        db_message.button = [data.get('button_text'), data.get('button_link')]
 
     match data['post_type']:
         case 'пост':
             # save to db
             db_message = await add_message(db_message, session_maker)
             print(db_message)
-            # add job
-            job_id = await add_one_job(func=post, dtime=db_message.post_date,
-                                       kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
-            # set job id to db
-            await set_post_job_id(db_message.id, job_id, session_maker)
+            # add job; set job id to db; bot send edited message
+            await notice_and_save_jobs(post, db_message, bot, data, session_maker)
 
-            the_date = db_message.post_date
-            text = f"Размещение поста\n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}"
+            # clear state before command_help to skip deleting previous message
+            msg = await bot.send_message(chat_id=data['answer_msg_chat_id'], text='/команды')
+            await state.clear()
+            await state.update_data(answer_msg_id=msg.message_id, answer_msg_chat_id=msg.chat.id)
 
-            await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
-                                        message_id=data['answer_msg_id'],
-                                        text=text
-                                        )
         case 'реклама':
             await bot.edit_message_text(chat_id=data['answer_msg_chat_id'],
                                         message_id=data['answer_msg_id'],
@@ -161,10 +170,10 @@ async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: ses
                                         reply_markup=delete_keyboard()
                                         )
             await state.update_data(db_message=db_message)
-            await state.set_state(PostStates.DELETE)
+            await state.set_state(PostStates.DEREGISTER_ADVERTISEMENT)
 
 
-async def call_delete_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:
+async def call_deregister_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:
     """This is post delete date handler"""
     data = await state.get_data()
 
@@ -175,30 +184,21 @@ async def call_delete_handler(call: CallbackQuery, bot: Bot, session_maker: sess
     # save to db
     db_message = await add_message(db_message, session_maker)
 
-    # add job
-    post_job_id = await add_one_job(func=post_then_delete, dtime=db_message.post_date,
-                                    kwargs={'db_message': db_message, 'bot': bot, 'session_maker': session_maker})
+    # add job; set job id to db; bot send edited message
+    await notice_and_save_jobs(post_then_delete, db_message, bot, data, session_maker)
 
-    # set post job id to db
-    await set_post_job_id(db_message.id, post_job_id, session_maker)
-
-    # bot send edited message
-    the_date = data['post_date']
-    text = post_information(db_message)
-    # text = f"Размещение рекламы \n{the_date.strftime('%d.%m.%Y')} в {the_date.strftime('%H:%M')}" \
-    #        f"\nавтоудаление через {string_days(call.data)}"
-    await bot.edit_message_text(chat_id=data['answer_msg_chat_id'], message_id=data['answer_msg_id'], text=text, parse_mode='HTML')
-
-    # state clear
+    # clear state before command_help to skip deleting previous message
     await state.clear()
-
+    await command_help(call, bot, state)
 
 # create router instance
-post_msg_next_steps_router = Router()
+call_steps_router = Router()
 # register callback_query
-post_msg_next_steps_router.callback_query.register(cancel_callback_handler, F.data == 'отмена', State(state="*"))
-post_msg_next_steps_router.callback_query.register(call_post_or_advertisement_handler, PostStates.POST_OR_ADVERTISEMENT)
-post_msg_next_steps_router.callback_query.register(call_date_handler, PostStates.DATE)
-post_msg_next_steps_router.callback_query.register(call_hours_handler, PostStates.HOURS)
-post_msg_next_steps_router.callback_query.register(call_minutes_handler, PostStates.HOURS_MINUTES)
-post_msg_next_steps_router.callback_query.register(call_delete_handler, PostStates.DELETE)
+call_steps_router.callback_query.register(cancel_callback_handler, F.data == 'отмена', State(state="*"))
+call_steps_router.callback_query.register(call_post_handler, F.data == 'пост', PostStates.POST_OR_ADVERTISEMENT)
+call_steps_router.callback_query.register(call_adv_handler, F.data == 'реклама', PostStates.POST_OR_ADVERTISEMENT)
+call_steps_router.callback_query.register(button_handler, F.data.in_(['да', 'нет']), PostStates.ADD_BUTTON)
+call_steps_router.callback_query.register(call_date_handler, PostStates.DATE)
+call_steps_router.callback_query.register(call_hours_handler, PostStates.HOURS)
+call_steps_router.callback_query.register(call_minutes_handler, PostStates.HOURS_MINUTES)
+call_steps_router.callback_query.register(call_deregister_handler, PostStates.DEREGISTER_ADVERTISEMENT)

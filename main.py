@@ -1,6 +1,6 @@
 import json
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, F
 from aiogram.dispatcher.event.bases import CancelHandler
 
 from config import TELEGRAM_TOKEN, ADMINCHAT
@@ -9,7 +9,7 @@ import logging
 
 from core.commands import register_base_commands_router
 from core.db.database import create_the_engine, url_object, get_session_maker, BaseModel, proceed_schemas
-from core.db.messages import select_by_message_tgm_id_v2
+from core.db.messages import select_by_message_tgm_id_v2, group_from_today
 
 from core.handlers import register_user_handlers_router
 from core.jobs.schedule import async_scheduler
@@ -48,6 +48,9 @@ async def main() -> None:
     # middleware register
     dp.message.middleware.register(IsAdminMiddleware())
     dp.message.middleware.register(AlbumMiddleware())
+    # filter only private messages and callbacks
+    dp.message.filter(F.chat.type == 'private')
+    dp.callback_query.filter(F.message.chat.type == 'private')
 
     # bot commands register
     register_base_commands_router(dp)
@@ -55,6 +58,8 @@ async def main() -> None:
     register_user_handlers_router(dp)
     dp.startup.register(start_bot)
     dp.shutdown.register(stop_bot)
+
+    await group_from_today(session_mkr)
 
     try:
         await dp.start_polling(bot)

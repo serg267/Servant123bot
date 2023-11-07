@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from config import ADMINCHAT
 from core.db import Messages, set_telegram_msg_id
+from core.keyboards import url_button_keyboard
 
 
 async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> None:
@@ -17,12 +18,18 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
 
     commons = {'chat_id': ADMINCHAT, 'request_timeout': 20}
 
+    # add button to msg excepts media_group and forwarded
+    url_button_kb = None
+    if db_message.button:
+        url_button_kb = url_button_keyboard(db_message.button[0], db_message.button[1])
+
     match db_message.message_type:
 
         case 'text':
             msg = await bot.send_message(**commons,
                                          text=db_message.message_json['text'],
-                                         entities=db_message.message_json['entities']
+                                         entities=db_message.message_json['entities'],
+                                         reply_markup=url_button_kb
                                          )
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
 
@@ -31,7 +38,8 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                        photo=db_message.message_json['photo'][-1]['file_id'],
                                        caption=db_message.message_json['caption'],
                                        caption_entities=db_message.message_json['caption_entities'],
-                                       has_spoiler=db_message.message_json['has_media_spoiler']
+                                       has_spoiler=db_message.message_json['has_media_spoiler'],
+                                       reply_markup=url_button_kb
                                        )
 
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
@@ -45,6 +53,7 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                        caption=db_message.message_json['caption'],
                                        caption_entities=db_message.message_json['caption_entities'],
                                        has_spoiler=db_message.message_json['has_media_spoiler'],
+                                       reply_markup=url_button_kb
                                        )
 
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
@@ -56,6 +65,7 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                        title=db_message.message_json['audio']['title'],
                                        caption=db_message.message_json['caption'],
                                        caption_entities=db_message.message_json['caption_entities'],
+                                       reply_markup=url_button_kb
                                        )
 
         case 'voice':
@@ -63,7 +73,8 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                        voice=db_message.message_json['voice']['file_id'],
                                        duration=db_message.message_json['voice']['duration'],
                                        caption=db_message.message_json['caption'],
-                                       caption_entities=db_message.message_json['caption_entities']
+                                       caption_entities=db_message.message_json['caption_entities'],
+                                       reply_markup=url_button_kb
                                        )
 
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
@@ -73,6 +84,7 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                           document=db_message.message_json['document']['file_id'],
                                           caption=db_message.message_json['caption'],
                                           caption_entities=db_message.message_json['caption_entities'],
+                                          reply_markup=url_button_kb
                                           )
 
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
@@ -85,6 +97,7 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
                                            height=db_message.message_json['animation']['height'],
                                            caption=db_message.message_json['caption'],
                                            caption_entities=db_message.message_json['caption_entities'],
+                                           reply_markup=url_button_kb
                                            )
 
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
@@ -92,7 +105,7 @@ async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> N
         case 'forwarded':
             msg = await bot.forward_message(**commons,
                                             from_chat_id=db_message.message_json['from_user']['id'],
-                                            message_id=db_message.message_json['message_id'],
+                                            message_id=db_message.message_json['message_id']
                                             )
             await set_telegram_msg_id(db_message.id, msg.message_id, session_maker)
 

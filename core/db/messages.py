@@ -1,7 +1,8 @@
 import datetime
-from typing import Type, Union, List
+from typing import Union, List, Sequence, Any
 
-from sqlalchemy import Column, Integer, String, JSON, TIMESTAMP, select
+from sqlalchemy import Column, Integer, String, JSON, TIMESTAMP, select, func, DATE, Row
+from sqlalchemy.engine.result import _TP
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 
@@ -17,6 +18,7 @@ class Messages(BaseModel):
     post_type = Column(String, nullable=True)
     message_type = Column(String)
     message_json = Column(JSON)
+    button = Column(JSON, nullable=True)
     post_date = Column(TIMESTAMP, nullable=True)
     post_job_id = Column(String, nullable=True)
     telegram_msg_id = Column(JSON, nullable=True)
@@ -109,3 +111,36 @@ async def set_telegram_msg_id(db_message_id: int, telegram_msg_id: Union[int, Li
         async with session.begin():
             obj = await session.get(Messages, db_message_id)  # take message object
             obj.telegram_msg_id = telegram_msg_id  # add data and commit
+
+
+async def group_from_today(session_maker: sessionmaker) -> List[list[str]]:
+    """Add post job id in db messages table object"""
+    async with session_maker() as session:
+        the_day = datetime.datetime.now()
+
+        # print(the_day)
+        # stmt = select(Messages, func.count(Messages.id)).group_by(Messages.post_type)
+        # stmt = select(Messages.post_type, func.count(Messages.post_type)).group_by(Messages.c.post_type)\
+        #     .order_by(Messages.post_date)
+        # stmt = select(Messages.post_date).filter(func.date(Messages.post_date) >= the_day)
+        # stmt = select(Messages.post_type, func.count(Messages.id)).select_from(Messages).group_by(Messages.post_type)
+
+        stmt = select(func.cast(Messages.post_date, DATE), func.count(Messages.id))\
+            .filter(func.date(Messages.post_date) >= the_day).select_from(Messages)\
+            .group_by(func.cast(Messages.post_date, DATE)).order_by(func.cast(Messages.post_date, DATE))
+
+        result = await session.execute(stmt)
+        results = result.all()
+    return [[f"{x[0].strftime('%d.%m.%y')} - {x[1]}П", x[0].strftime('%d.%m.%Y')] for x in results]
+
+
+async def objects_from_date(the_day: str, session_maker: sessionmaker) -> List[Messages]:
+    """Add post job id in db messages table object"""
+    async with session_maker() as session:
+        the_day = datetime.datetime.strptime(the_day, '%d.%m.%Y')
+
+        stmt = select(Messages).filter(func.date(Messages.post_date) == the_day).order_by(Messages.post_date)
+        result = await session.scalars(stmt)
+        print(result)
+        return result
+

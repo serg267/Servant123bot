@@ -30,7 +30,7 @@ def create_the_engine(url: Union[URL, str]) -> AsyncEngine:
 async def proceed_schemas(engine: AsyncEngine, metadata: MetaData) -> None:
     """create schemas in the db"""
     async with engine.begin() as conn:
-        await conn.run_sync(metadata.drop_all)
+        # await conn.run_sync(metadata.drop_all)
         await conn.run_sync(metadata.create_all)
 
 
