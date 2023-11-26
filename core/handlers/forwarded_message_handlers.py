@@ -4,7 +4,7 @@ from aiogram import Bot, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from config import ADMINCHAT
+from config import CHANEL_ID
 from core.handlers.message_handlers import clear
 from core.keyboards import choice_keyboard
 from core.models.States import PostStates

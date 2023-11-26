@@ -1,10 +1,10 @@
 from aiogram import Bot
-from config import ADMINCHAT
+from config import CHANEL_ID
 from core.db import Messages
 from sqlalchemy.orm import sessionmaker
 
 from core.db.messages import set_delete_job_id
-from core.jobs.schedule import add_one_job
+from core.scheduler.schedule import add_one_job
 from core.logics import post
 
 
@@ -13,12 +13,12 @@ async def delete(db_message: Messages, bot: Bot) -> None:
 
     # for all messages types, excepts media_group
     if isinstance(db_message.telegram_msg_id, int):
-        await bot.delete_message(chat_id=ADMINCHAT, message_id=db_message.telegram_msg_id)
+        await bot.delete_message(chat_id=CHANEL_ID, message_id=db_message.telegram_msg_id)
 
     # for media_group messages
     elif isinstance(db_message.telegram_msg_id, list):
         for msg_id in db_message.telegram_msg_id:
-            await bot.delete_message(chat_id=ADMINCHAT, message_id=msg_id)
+            await bot.delete_message(chat_id=CHANEL_ID, message_id=msg_id)
 
 
 async def post_then_delete(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> None:

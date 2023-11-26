@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from config import ADMINCHAT
+from config import CHANEL_ID
 from core.db import Messages, set_telegram_msg_id
 from core.keyboards import url_button_keyboard
 
@@ -16,7 +16,7 @@ from core.keyboards import url_button_keyboard
 async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> None:
     """This is post function"""
 
-    commons = {'chat_id': ADMINCHAT, 'request_timeout': 20}
+    commons = {'chat_id': CHANEL_ID, 'request_timeout': 20}
 
     # add button to msg excepts media_group and forwarded
     url_button_kb = None

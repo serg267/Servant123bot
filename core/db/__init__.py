@@ -11,9 +11,12 @@ __all__ = ['Messages',
            'set_post_job_id',
            'add_message',
            'group_from_today',
-           'objects_from_date'
+           'objects_from_date',
+           'get_db_message',
+           'delete_db_message_by_id',
+           'delete_db_message'
            ]
 
 from .database import proceed_schemas, BaseModel, url_object
 from .messages import Messages, set_telegram_msg_id, set_post_job_id, set_p_d_jobs_id, add_message, group_from_today, \
-    objects_from_date
+    objects_from_date, get_db_message, delete_db_message_by_id, delete_db_message

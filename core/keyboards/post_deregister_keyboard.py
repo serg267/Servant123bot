@@ -13,7 +13,7 @@ def string_days(days: str) -> str:
     return f'{days} {day}'
 
 
-def delete_keyboard() -> InlineKeyboardMarkup:
+def days_deregister_keyboard() -> InlineKeyboardMarkup:
     """
     post_delete keyboard
     :return: hour buttons

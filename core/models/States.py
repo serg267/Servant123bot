@@ -1,7 +1,10 @@
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
 
-storage = MemoryStorage()
+
+# memory storage
+# storage = MemoryStorage()
 
 
 class PostStates(StatesGroup):
@@ -17,6 +20,7 @@ class PostStates(StatesGroup):
     HOURS = State()
     HOURS_MINUTES = State()
     DEREGISTER_ADVERTISEMENT = State()
-    DELETE_THIS_POST = State()
+    ALL_POST_FROM_DATE = State()
+    DELETE_THE_POST = State()
 
 

@@ -1,4 +1,6 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from typing import Union
+
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardRemove
 
 
 def start_keyboard() -> InlineKeyboardMarkup:
@@ -46,7 +48,7 @@ def yes_no_keyboard() -> InlineKeyboardMarkup:
     return keyboard
 
 
-def cancel_keyboard() -> InlineKeyboardMarkup:
+def cancel_keyboard(mode: int = 0) -> InlineKeyboardMarkup:
     """
     return keyboard: отмена
     :return:
@@ -58,6 +60,13 @@ def cancel_keyboard() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text='отмена', callback_data='отмена'),
             ],
         ])
+    if mode == 1:
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='<<', callback_data='отмена'),
+                ],
+            ])
 
     return keyboard
 
@@ -97,6 +106,25 @@ def url_button_keyboard(text, url_link) -> InlineKeyboardMarkup:
             [
                 InlineKeyboardButton(text=text, url=url_link)
             ]
+        ])
+
+    return keyboard
+
+
+def msg_id_delete_keyboard(db_msg_id: Union[str, int]) -> InlineKeyboardMarkup:
+    """
+    return keyboard: db_msg_id_button отмена
+    :return:
+    """
+    if isinstance(db_msg_id, int):
+        db_msg_id = str(db_msg_id)
+
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text='удалить', callback_data=db_msg_id),
+                InlineKeyboardButton(text='отмена', callback_data='отмена')
+            ],
         ])
 
     return keyboard

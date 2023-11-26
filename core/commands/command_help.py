@@ -4,7 +4,7 @@ from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from config import ADMINCHAT
+from config import CHANEL_ID
 from core.keyboards import start_keyboard
 from core.models.States import PostStates
 

@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, JSON, DATE, URL, MetaData, TIMES
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine, AsyncSession, async_sessionmaker
 from typing import Union
-
+from config import POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DATABASE
 
 BaseModel = declarative_base()
 
@@ -13,11 +13,11 @@ def url_object() -> URL:
     """create url object with db connection variables"""
     url = URL.create(
         "postgresql+asyncpg",
-        username="postgres",  # better to use env variables
-        password="Nikola27",  # plain (unescaped) text
-        host='localhost',  # better to use env variables
-        port=5432,  # better to use env variables
-        database="postgres",  # better to use env variables
+        username=POSTGRES_USERNAME,  # better to use env variables
+        password=POSTGRES_PASSWORD,  # plain (unescaped) text
+        host=POSTGRES_HOST,  # better to use env variables
+        port=POSTGRES_PORT,  # better to use env variables
+        database=POSTGRES_DATABASE,  # better to use env variables
     )
     return url
 

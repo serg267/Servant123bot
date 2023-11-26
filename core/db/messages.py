@@ -1,8 +1,7 @@
 import datetime
-from typing import Union, List, Sequence, Any
+from typing import Union, List, Sequence, Any, Type
 
 from sqlalchemy import Column, Integer, String, JSON, TIMESTAMP, select, func, DATE, Row
-from sqlalchemy.engine.result import _TP
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 
@@ -49,14 +48,14 @@ async def select_by_message_tgm_id_v2(telegram_msg_id: int, session_maker: sessi
         return obj
 
 
-# async def get_message(id: int, session_maker: async_sessionmaker) -> None:
-#     """Take's Messages object from db by message_tgm_id"""
-#     async with session_maker() as session:
-#         stmt = get(Messages, id)
-#         session: AsyncSession
-#         obj = await session.execute(stmt)
-#         obj = obj.scalars().one()
-#         return obj
+async def get_db_message(db_message_id: int, session_maker: sessionmaker) -> Messages | None:
+    """Take's Messages object from db by message_tgm_id"""
+    async with session_maker() as session:
+        session: AsyncSession
+        obj = await session.get(Messages, db_message_id)
+        print(obj)
+        # obj = obj.scalars().one()
+        return obj
 
 
 async def add_message(msg: Messages, session_maker: sessionmaker) -> Messages:
@@ -116,18 +115,24 @@ async def set_telegram_msg_id(db_message_id: int, telegram_msg_id: Union[int, Li
 async def group_from_today(session_maker: sessionmaker) -> List[list[str]]:
     """Add post job id in db messages table object"""
     async with session_maker() as session:
-        the_day = datetime.datetime.now()
+        the_day_before = datetime.datetime.now() - datetime.timedelta(days=1)
+        print(the_day_before)
 
-        # print(the_day)
+        # print(the_day_before)
         # stmt = select(Messages, func.count(Messages.id)).group_by(Messages.post_type)
         # stmt = select(Messages.post_type, func.count(Messages.post_type)).group_by(Messages.c.post_type)\
         #     .order_by(Messages.post_date)
-        # stmt = select(Messages.post_date).filter(func.date(Messages.post_date) >= the_day)
+        # stmt = select(Messages.post_date).filter(func.date(Messages.post_date) >= the_day_before)
         # stmt = select(Messages.post_type, func.count(Messages.id)).select_from(Messages).group_by(Messages.post_type)
 
         stmt = select(func.cast(Messages.post_date, DATE), func.count(Messages.id))\
-            .filter(func.date(Messages.post_date) >= the_day).select_from(Messages)\
+            .filter(func.date(Messages.post_date).__ge__(the_day_before)).select_from(Messages)\
             .group_by(func.cast(Messages.post_date, DATE)).order_by(func.cast(Messages.post_date, DATE))
+
+        # stmt = select(func.cast(Messages.post_date, DATE), func.count(Messages.id)) \
+        #     .select_from(Messages)\
+        #     .group_by(func.cast(Messages.post_date, DATE))\
+        #     .order_by(func.cast(Messages.post_date, DATE))
 
         result = await session.execute(stmt)
         results = result.all()
@@ -138,9 +143,26 @@ async def objects_from_date(the_day: str, session_maker: sessionmaker) -> List[M
     """Add post job id in db messages table object"""
     async with session_maker() as session:
         the_day = datetime.datetime.strptime(the_day, '%d.%m.%Y')
+        # the_day = datetime.datetime.strptime('18.11.2023', '%d.%m.%Y')
 
         stmt = select(Messages).filter(func.date(Messages.post_date) == the_day).order_by(Messages.post_date)
         result = await session.scalars(stmt)
         print(result)
         return result
 
+
+async def delete_db_message_by_id(db_message_id: int, session_maker: sessionmaker) -> None:
+    """Delete Messages object from db by db message id"""
+    async with session_maker() as session:
+        session: AsyncSession
+        async with session.begin():
+            obj = await session.get(Messages, db_message_id)
+            await session.delete(obj)
+
+
+async def delete_db_message(db_message: Messages, session_maker: sessionmaker) -> None:
+    """Delete Messages object from db by message_tgm_id"""
+    async with session_maker() as session:
+        session: AsyncSession
+        async with session.begin():
+            await session.delete(db_message)
