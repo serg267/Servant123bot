@@ -4,7 +4,7 @@ __all__ = ['post',
            'show_information',
            'post_information',
            'delete_information',
-           'post_then_delete'
+           'post_then_delete',
            ]
 
 from .determine_type import determine_message_type

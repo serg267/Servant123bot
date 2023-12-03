@@ -1,19 +1,23 @@
-import datetime
+from datetime import datetime, timedelta
 from typing import Union, List
 
+import pytz
 from sqlalchemy import Column, Integer, String, JSON, TIMESTAMP, select, func, DATE
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from core.db import BaseModel
+from core.keyboards import utc_to_mos_time
 
 
 class Messages(BaseModel):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
-    created_at = Column(TIMESTAMP, default=datetime.datetime.now())
-    updated_at = Column(TIMESTAMP, default=datetime.datetime.now(), onupdate=datetime.datetime.now())
+    created_at = Column(TIMESTAMP, default=utc_to_mos_time(datetime.now(pytz.utc)))
+    updated_at = Column(TIMESTAMP,
+                        default=utc_to_mos_time(datetime.now(pytz.utc)),
+                        onupdate=utc_to_mos_time(datetime.now(pytz.utc)))
     post_type = Column(String, nullable=True)
     message_type = Column(String)
     message_json = Column(JSON)
@@ -115,7 +119,7 @@ async def set_telegram_msg_id(db_message_id: int, telegram_msg_id: Union[int, Li
 async def group_from_today(session_maker: sessionmaker) -> List[list[str]]:
     """Add post job id in db messages table object"""
     async with session_maker() as session:
-        the_day_before = datetime.datetime.now() - datetime.timedelta(days=1)
+        the_day_before = utc_to_mos_time(datetime.now(pytz.utc)) - timedelta(days=1)
         print(the_day_before)
 
         # print(the_day_before)
@@ -142,7 +146,7 @@ async def group_from_today(session_maker: sessionmaker) -> List[list[str]]:
 async def objects_from_date(the_day: str, session_maker: sessionmaker) -> List[Messages]:
     """Add post job id in db messages table object"""
     async with session_maker() as session:
-        the_day = datetime.datetime.strptime(the_day, '%d.%m.%Y')
+        the_day = datetime.strptime(the_day, '%d.%m.%Y')
         # the_day = datetime.datetime.strptime('18.11.2023', '%d.%m.%Y')
 
         stmt = select(Messages).filter(func.date(Messages.post_date) == the_day).order_by(Messages.post_date)
