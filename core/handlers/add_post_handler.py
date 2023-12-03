@@ -22,4 +22,4 @@ async def call_add_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> 
     await state.set_state(PostStates.WAITING_FOR_POST)
 
 call_router = Router()
-call_router.callback_query.register(call_add_handler, F.data == 'добавить', State())
+call_router.callback_query.register(call_add_handler, F.data == 'add', State())

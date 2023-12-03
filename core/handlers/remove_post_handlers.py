@@ -94,6 +94,6 @@ async def remove_post_handler(call: CallbackQuery, bot: Bot, session_maker: sess
 
 
 remove_router = Router()
-remove_router.callback_query.register(remove_select_date_handler, F.data.in_(['удалить', 'посмотреть']), State())
+remove_router.callback_query.register(remove_select_date_handler, F.data.in_(['delete', 'show']), State())
 remove_router.callback_query.register(remove_select_post_handler, PostStates.ALL_POST_FROM_DATE)
 remove_router.callback_query.register(remove_post_handler, PostStates.DELETE_THE_POST)

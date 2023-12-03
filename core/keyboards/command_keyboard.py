@@ -12,13 +12,13 @@ def start_keyboard() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='добавить', callback_data='добавить'),
+                InlineKeyboardButton(text='добавить', callback_data='add'),
             ],
             [
-                InlineKeyboardButton(text='посмотреть', callback_data='посмотреть')
+                InlineKeyboardButton(text='посмотреть', callback_data='show')
             ],
             [
-                InlineKeyboardButton(text='удалить', callback_data='удалить')
+                InlineKeyboardButton(text='удалить', callback_data='delete')
             ]
         ])
 

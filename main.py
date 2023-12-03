@@ -18,12 +18,12 @@ from core.middlewares.is_admin import IsAdminMiddleware
 from core.middlewares.mediagroup import AlbumMiddleware
 
 
-async def starting_bot() -> None:
+async def on_bot_start() -> None:
     """Start bot notify """
     logging.basicConfig(level=logging.DEBUG,
                         format="%(asctime)s - [%(levelname)s] - %(name)s - "
                                "(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
-
+    logging.info('Bot started')
     # Redis storage
     redis_ = redis.Redis(host=REDIS_HOST,
                          username=REDIS_USER or None,
@@ -61,6 +61,7 @@ async def starting_bot() -> None:
     # msgs = await objects_from_date('18.11.2023', session_mkr)
     # for ms in msgs:
     #     print(ms.post_date)
+
     await dp.start_polling(bot)
 
 
@@ -76,9 +77,9 @@ async def stop_bot(bot: Bot) -> None:
 
 def main() -> None:
     """main function"""
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
     try:
-        asyncio.run(starting_bot())
+        asyncio.run(on_bot_start())
     except (KeyboardInterrupt, SystemExit):
         logger.info('Bot stopped')
 

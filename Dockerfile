@@ -1,6 +1,6 @@
 FROM python:3.10
 
-WORKDIR /app
+WORKDIR .
 
 COPY requirements.txt requirements.txt
 
@@ -8,6 +8,6 @@ RUN pip install redis
 
 RUN pip install -r requirements.txt
 
-COPY app .
+COPY . .
 
 CMD ["python", "main.py"]
