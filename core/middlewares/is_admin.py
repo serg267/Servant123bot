@@ -3,7 +3,7 @@ from typing import Callable, Dict, Any, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 
-from app.config import ADMIN_2, ADMIN_1
+from config import ADMIN_2, ADMIN_1
 
 
 class IsAdminMiddleware(BaseMiddleware):

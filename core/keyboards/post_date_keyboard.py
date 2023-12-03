@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from app.static import DAYS_OF_WEEK
+from static import DAYS_OF_WEEK
 
 
 def date_keyboard() -> InlineKeyboardMarkup:

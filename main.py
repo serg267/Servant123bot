@@ -1,19 +1,16 @@
-from aiogram.fsm.state import any_state, State
-
 from config import TELEGRAM_TOKEN, REDIS_HOST, REDIS_PASSWORD, REDIS_USER
 
-from aioredis import Redis
+import redis.asyncio as redis
 
 import asyncio
 
 import logging
 
 from aiogram import Bot, Dispatcher, F
-from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.redis import RedisStorage
 
-from app.core.commands import register_base_commands_router
-from app.core.db import create_the_engine, url_object, get_session_maker, BaseModel, proceed_schemas
+from core.commands import register_base_commands_router
+from core.db import create_the_engine, url_object, get_session_maker, BaseModel, proceed_schemas
 
 from core.handlers import register_user_handlers_router
 from core.scheduler.schedule import async_scheduler
@@ -28,10 +25,10 @@ async def starting_bot() -> None:
                                "(%(filename)s).%(funcName)s(%(lineno)d) - %(message)s")
 
     # Redis storage
-    redis = Redis(host=REDIS_HOST,
-                  username=REDIS_USER or None,
-                  password=REDIS_PASSWORD or None)
-    storage = RedisStorage(redis=redis)
+    redis_ = redis.Redis(host=REDIS_HOST,
+                         username=REDIS_USER or None,
+                         password=REDIS_PASSWORD or None)
+    storage = RedisStorage(redis=redis_)
 
     # Database
     postgres_url = url_object()  # create postgres url

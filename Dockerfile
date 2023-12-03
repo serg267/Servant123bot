@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY requirements.txt requirements.txt
 
-RUN pip install --upgrade setuptools
+RUN pip install redis
 
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY app .
 
 CMD ["python", "main.py"]

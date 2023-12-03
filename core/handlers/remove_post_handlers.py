@@ -4,12 +4,12 @@ from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
-from app.core.commands import command_help
-from app.core.db import group_from_today, objects_from_date, get_db_message, delete_db_message
-from app.core.scheduler import delete_job
-from app.core.keyboards import msg_id_delete_keyboard, cancel_keyboard, db_days_delete_keyboard
-from app.core.logics import show_information, delete_information
-from app.core.models import PostStates
+from core.commands import command_help
+from core.db import group_from_today, objects_from_date, get_db_message, delete_db_message
+from core.scheduler import delete_job
+from core.keyboards import msg_id_delete_keyboard, cancel_keyboard, db_days_delete_keyboard
+from core.logics import show_information, delete_information
+from core.models import PostStates
 
 
 async def remove_select_date_handler(call: CallbackQuery, bot: Bot, session_maker: sessionmaker, state: FSMContext) -> None:

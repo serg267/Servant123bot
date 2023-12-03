@@ -2,9 +2,9 @@ from aiogram import Bot
 from aiogram.types import InputMediaPhoto, InputMediaVideo, InputMediaDocument, InputMediaAudio, InputMediaAnimation
 from sqlalchemy.orm import sessionmaker
 
-from app.config import CHANEL_ID
-from app.core.db import Messages, set_telegram_msg_id
-from app.core.keyboards import url_button_keyboard
+from config import CHANEL_ID
+from core.db import Messages, set_telegram_msg_id
+from core.keyboards import url_button_keyboard
 
 
 async def post(db_message: Messages, bot: Bot, session_maker: sessionmaker) -> None:

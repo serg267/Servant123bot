@@ -2,8 +2,8 @@ from aiogram import Bot, Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
-from app.core.keyboards import cancel_keyboard, some_buttons_keyboard, date_keyboard
-from app.core.models.States import PostStates
+from core.keyboards import cancel_keyboard, some_buttons_keyboard, date_keyboard
+from core.models.States import PostStates
 
 
 async def button_text_call_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:

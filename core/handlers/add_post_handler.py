@@ -3,8 +3,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State
 from aiogram.types import CallbackQuery
 
-from app.core.keyboards import cancel_keyboard
-from app.core.models import PostStates
+from core.keyboards import cancel_keyboard
+from core.models import PostStates
 
 
 async def call_add_handler(call: CallbackQuery, bot: Bot, state: FSMContext) -> None:

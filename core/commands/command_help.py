@@ -5,7 +5,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
-from app.core.keyboards import start_keyboard
+from core.keyboards import start_keyboard
 
 
 async def command_help(message: Union[Message, CallbackQuery], bot: Bot, state: FSMContext) -> None:

@@ -5,7 +5,7 @@ from sqlalchemy import Column, Integer, String, JSON, TIMESTAMP, select, func, D
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
-from app.core.db import BaseModel
+from core.db import BaseModel
 
 
 class Messages(BaseModel):

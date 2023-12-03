@@ -1,8 +1,8 @@
 from typing import Any
 
-from app.core.db import Messages
+from core.db import Messages
 
-from app.static import DAYS_OF_WEEK, MONTH, MSG
+from static import DAYS_OF_WEEK, MONTH, MSG
 
 
 def title_and_date_information(db_message: Messages, length: int) -> tuple[str | Any, str]:

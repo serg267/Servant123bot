@@ -8,13 +8,13 @@ from aiogram.types import CallbackQuery
 from sqlalchemy.orm import sessionmaker
 
 
-from app.core.commands import command_help
-from app.core.db import Messages, set_post_job_id, add_message, get_db_message
-from app.core.models import PostStates
-from app.core.scheduler import add_one_job
-from app.core.keyboards import date_keyboard, hours_keyboard, hours_minutes_keyboard, days_deregister_keyboard,\
+from core.commands import command_help
+from core.db import Messages, set_post_job_id, add_message, get_db_message
+from core.models import PostStates
+from core.scheduler import add_one_job
+from core.keyboards import date_keyboard, hours_keyboard, hours_minutes_keyboard, days_deregister_keyboard,\
     yes_no_keyboard, some_buttons_keyboard
-from app.core.logics import post, determine_message_type, post_then_delete, post_information
+from core.logics import post, determine_message_type, post_then_delete, post_information
 
 
 async def notice_and_save_jobs(func: Callable, db_message: Messages, bot: Bot, data: Dict,

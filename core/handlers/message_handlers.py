@@ -8,9 +8,9 @@ from aiogram.types import Message
 from aiogram import F
 from sqlalchemy.orm import sessionmaker
 
-from app.core.keyboards import choice_keyboard
-from app.core.logics import determine_message_type
-from app.core.models import PostStates
+from core.keyboards import choice_keyboard
+from core.logics import determine_message_type
+from core.models import PostStates
 
 
 async def clear(bot: Bot, state: FSMContext) -> None:

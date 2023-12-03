@@ -4,8 +4,8 @@ from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from app.core.commands import command_help
-from app.static import SAY_HELLO
+from core.commands import command_help
+from static import SAY_HELLO
 
 
 async def command_start(message: Message, bot: Bot,  state: FSMContext) -> None:

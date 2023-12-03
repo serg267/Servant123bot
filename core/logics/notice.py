@@ -3,8 +3,8 @@ from typing import Dict
 from aiogram import Bot
 from sqlalchemy.orm import sessionmaker
 
-from app.core.db import Messages
-from app.core.logics import post_information
+from core.db import Messages
+from core.logics import post_information
 
 
 async def notice(db_message: Messages, bot: Bot, data: Dict, session_maker: sessionmaker) -> None:

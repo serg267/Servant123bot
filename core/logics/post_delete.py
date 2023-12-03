@@ -2,10 +2,10 @@ from aiogram import Bot
 
 from sqlalchemy.orm import sessionmaker
 
-from app.config import CHANEL_ID
-from app.core.db import Messages, set_delete_job_id
-from app.core.logics import post
-from app.core.scheduler import add_one_job
+from config import CHANEL_ID
+from core.db import Messages, set_delete_job_id
+from core.logics import post
+from core.scheduler import add_one_job
 
 
 async def delete(db_message: Messages, bot: Bot) -> None:
