@@ -6,11 +6,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from core.keyboards import start_keyboard
+from static import CMDS
 
 
-async def command_help(message: Union[Message, CallbackQuery], bot: Bot, state: FSMContext) -> None:
-    """Command /help handler"""
-
+async def clear_for_command_help(bot: Bot, state: FSMContext) -> None:
+    """clear state and delete previous bot conversation message/s"""
     # check for not empty state. if it is, clear and del previous bot msg
     data = await state.get_data()
 
@@ -24,9 +24,18 @@ async def command_help(message: Union[Message, CallbackQuery], bot: Bot, state: 
             # clean up state after all
             await state.clear()
 
-    msg = await bot.send_message(chat_id=message.from_user.id,
-                                 text='Выбери команду',
-                                 reply_markup=start_keyboard()
-                                 )
-    # await state.set_state(PostStates.WAITING_FOR_POST)
+
+def base_commands_string() -> str:
+    """make base commands string"""
+    string = ''
+    for command, text in CMDS.items():
+        string = string + f"{command} - {text}\n"
+    return string
+
+
+async def command_help(event: Union[Message, CallbackQuery], bot: Bot, state: FSMContext) -> None:
+    """Command /help handler"""
+    await clear_for_command_help(bot=bot, state=state)
+    msg = await bot.send_message(chat_id=event.from_user.id, text=base_commands_string())
     await state.update_data(answer_msg_id=msg.message_id, answer_msg_chat_id=msg.chat.id)
+

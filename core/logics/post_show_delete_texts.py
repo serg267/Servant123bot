@@ -35,17 +35,7 @@ def title_and_date_information(db_message: Messages, length: int) -> tuple[str |
 def post_information(db_message: Messages, length: int = 70) -> str:
     """Post text information"""
     chanel = '<a href="https://t.me/world_rk">История мировых религий и религиозных культов</a>'
-    posted_by = 'Будет опубликован через Lettercarrierbot'
-    title, the_date = title_and_date_information(db_message, length)
-
-    text = f"🗓 Пост <b>«{title}»</b>\nЗапланирован на <b>{the_date}</b> для публикации на канале {chanel}\n{posted_by}"
-    return text
-
-
-def post_information(db_message: Messages, length: int = 70) -> str:
-    """Post text information"""
-    chanel = '<a href="https://t.me/world_rk">История мировых религий и религиозных культов</a>'
-    posted_by = 'Будет опубликован через Lettercarrierbot'
+    posted_by = 'Будет опубликован через <b>Ангарион</b>'
     title, the_date = title_and_date_information(db_message, length)
 
     text = f"🗓 Пост <b>«{title}»</b>\nЗапланирован на <b>{the_date}</b> для публикации на канале {chanel}\n{posted_by}"

@@ -26,7 +26,7 @@ def hours_keyboard(is_today: bool) -> InlineKeyboardMarkup:
     for hour in [str(hour) for hour in range(from_hour, 24)]:
         some_keyboard.button(text=f'{hour}:', callback_data=f'{hour}')
     some_keyboard.adjust(4)
-    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='отмена'))
+    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     return some_keyboard.as_markup()
 
 
@@ -37,7 +37,6 @@ def hours_minutes_keyboard(is_today: bool, hour: str) -> InlineKeyboardMarkup:
     """
     some_keyboard = InlineKeyboardBuilder()
     minutes = ['00', '15', '30', '45']
-    tz = pytz.timezone('Europe/Moscow')
 
     if not is_today or utc_to_mos_time(datetime.now(pytz.utc)).hour < int(hour):
         for minute in minutes:
@@ -47,18 +46,6 @@ def hours_minutes_keyboard(is_today: bool, hour: str) -> InlineKeyboardMarkup:
         for minute in minutes[the_minute:]:
             some_keyboard.button(text=f'{hour}:{minute}', callback_data=f'{hour}:{minute}')
 
-    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='отмена'))
+    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     some_keyboard.adjust(1)
     return some_keyboard.as_markup()
-
-
-# def what_time_keyboard() -> InlineKeyboardMarkup:
-#     some_keyboard = InlineKeyboardBuilder()
-#
-#     for hour in [str(hour) for hour in range(8, 23)]:
-#         buttons = []
-#         for minutes in ['00', '15', '30', '45']:
-#             some_keyboard.button(text=f'{hour}:{minutes}', callback_data=f'{hour}:{minutes}')
-#     some_keyboard.button(text='отмена', callback_data='отмена')
-#     some_keyboard.adjust(4)
-#     return some_keyboard.as_markup()

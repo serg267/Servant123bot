@@ -34,13 +34,13 @@ def yes_no_keyboard() -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='да', callback_data='да'),
+                InlineKeyboardButton(text='да', callback_data='yes'),
             ],
             [
-                InlineKeyboardButton(text='нет', callback_data='нет')
+                InlineKeyboardButton(text='нет', callback_data='no')
             ],
             [
-                InlineKeyboardButton(text='отмена', callback_data='отмена'),
+                InlineKeyboardButton(text='отмена', callback_data='cancel'),
             ],
         ])
 
@@ -56,14 +56,14 @@ def cancel_keyboard(mode: int = 0) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text='отмена', callback_data='отмена'),
+                InlineKeyboardButton(text='отмена', callback_data='cancel'),
             ],
         ])
     if mode == 1:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='<<', callback_data='отмена'),
+                    InlineKeyboardButton(text='<<', callback_data='cancel'),
                 ],
             ])
 
@@ -87,7 +87,7 @@ def some_buttons_keyboard() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text='подробнее', callback_data='подробнее'),
             ],
             [
-                InlineKeyboardButton(text='отмена', callback_data='отмена'),
+                InlineKeyboardButton(text='отмена', callback_data='cancel'),
             ],
         ])
 
@@ -122,7 +122,7 @@ def msg_id_delete_keyboard(db_msg_id: Union[str, int]) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(text='удалить', callback_data=db_msg_id),
-                InlineKeyboardButton(text='отмена', callback_data='отмена')
+                InlineKeyboardButton(text='отмена', callback_data='cancel')
             ],
         ])
 

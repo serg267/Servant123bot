@@ -21,6 +21,6 @@ def days_deregister_keyboard() -> InlineKeyboardMarkup:
     some_keyboard = InlineKeyboardBuilder()
     for day in [str(day) for day in range(1, 8)]:
         some_keyboard.button(text=string_days(day), callback_data=day)
-    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='отмена'))
+    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     some_keyboard.adjust(1)
     return some_keyboard.as_markup()

@@ -10,6 +10,6 @@ def db_days_delete_keyboard(dates: list[list[str]]) -> InlineKeyboardMarkup:
     some_keyboard = InlineKeyboardBuilder()
     for text, date in dates:
         some_keyboard.button(text=text, callback_data=date)
-    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='отмена'))
+    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     some_keyboard.adjust(1)
     return some_keyboard.as_markup()

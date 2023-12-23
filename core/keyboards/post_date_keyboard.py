@@ -29,5 +29,5 @@ def date_keyboard() -> InlineKeyboardMarkup:
         if (number + 1) % 7 == 0:
             some_keyboard.row(*week)
             week = []
-    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='отмена'))
+    some_keyboard.row(InlineKeyboardButton(text='отмена', callback_data='cancel'))
     return some_keyboard.as_markup()
