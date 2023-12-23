@@ -127,12 +127,12 @@ async def call_minutes_handler(call: CallbackQuery, bot: Bot, session_maker: ses
     logging.debug('call_minutes_handler')
 
     data = await state.get_data()
-    # the_date = f"{data['post_date']} {call.data}"
 
     # add time to date (combine datetime)
-    # the_date = datetime.combine(datetime.strptime(data['post_date'], '%d.%m.%Y'),
-    #                             datetime.strptime(call.data, '%H:%M').time())
-    the_date = datetime.now() + timedelta(minutes=2)  # test date
+    the_date = datetime.combine(datetime.strptime(data['post_date'], '%d.%m.%Y'),
+                                datetime.strptime(call.data, '%H:%M').time())
+
+    # the_date = datetime.now() + timedelta(minutes=2)  # test date
     the_date = the_date.strftime('%d.%m.%Y %H:%M')
 
     print('the date :', the_date)
